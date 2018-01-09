@@ -3,18 +3,21 @@ describe("Test Meal Plan", function () {
 
 	describe("Validation: Basic Inputs", function () {
 
-		it("should handle undefined inputs", function () {
-			expect(planMeal()).toEqual({});
+		it("should require 2 inputs", function () {
+			expect(planMeal({})).toEqual({ error: "" });
 		});
 
+		// (Provided)
 		it("should accept empty dictionary", function () {
 			expect(planMeal({}, 1)).toEqual({});
 		});
 
+		// (Provided)
 		it("should accept single-food item dictionary", function () {
-			expect(planMeal({ 1: 1 }, 5)).toEqual({ 1: 5 });
+			expect(planMeal({ 1: 1 }, 2)).toEqual({ 1: 2 });
 		});
 
+		// (Provided)
 		it("should handle a meal with 0 portions", function () {
 			expect(planMeal({ 1: 1 }, 0)).toEqual({ 1: 0 });
 		});
@@ -64,10 +67,7 @@ describe("Test Meal Plan", function () {
 	
 	// When a ratio does not divide evenly
 
-	it("should correctly handle remainders", function () {
-		expect(planMeal({ 1: 1, 2: 1, 3: 1 }, 11)).toEqual({ 1: 4, 2: 4, 3: 3 });
-	});
-
+	// re-visit this...
 	it("should handle when a single ratio is greater than portion", function () {
 		expect(planMeal({ 1: 5 }, 1)).toEqual({ 1: 5 });
 	});
@@ -82,4 +82,43 @@ describe("Test Meal Plan", function () {
 		expect(planMeal({ 1: 5, 2: 5 }, 4)).toEqual({ 1: 2, 2: 2 });
 	});
 
+
+	it("should allocate non-integer portion counts to the largest remainder", function () {
+		var input = {
+			1: 3,
+			2: 5  
+		},
+		output = {
+			1: 2,
+			2: 2
+		},
+		total = 4;
+	});
+
+
+	describe("Functional Requirements", function () {
+
+		it("should assign all portions", function () {
+			expect(planMeal({ 1: 1 }, 10)).toEqual({ 1: 10 });
+		});
+
+		it("should only assign integers for portion counts", function () {
+			expect(planMeal({ 1: 1, 2: 1, 3: 1 }, 11)).toEqual({ 1: 4, 2: 4, 3: 3 });
+		});
+
+		it("should choose the largest remainder for allocating non-integer portion counts", function () {
+
+			/* (2*8)%3 is 1 and (1*8)%3 is 2. Thus numeric ID 2 will be given the extra portion. */
+			expect(planMeal({ 1: 2, 2: 1 }, 8)).toEqual({ 1: 5, 2: 3 });
+		});
+
+		it("should choose the item with the smallest numeric ID if there is no largest remainder", function () {
+
+			/* (3*4)/8 and (5*4)/8 both have remainders of 4. The lower numeric identifier should have the extra portion
+			   assigned, so re-arranging them will result in 2 different meal plans. */
+			expect(planMeal({ 1: 5, 2: 3 }, 4)).toEqual({ 1: 3, 2: 1 });
+			expect(planMeal({ 1: 3, 2: 5 }, 4)).toEqual({ 1: 2, 2: 2 });
+		});
+
+	});
 });
