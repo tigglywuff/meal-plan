@@ -1,10 +1,34 @@
+
+beforeEach(function () {
+	jasmine.addMatchers({
+		toThrowError: function () {
+			return {
+				compare: function (x) {
+					var result = { pass: x.hasOwnProperty("error") };
+
+					result.message = (result.pass) ? "OK" : "Expected an error";
+					return result;
+				}
+			}
+		}
+	});
+});
+
 describe("Test Meal Plan", function () {
 	var planMeal = require("../planMeal.js");
 
-	describe("Validation: Basic Inputs", function () {
+	describe("Input Validation", function () {
 
 		it("should require 2 inputs", function () {
-			expect(planMeal({})).toEqual({ error: "" });
+			expect(planMeal()).toThrowError();
+		});
+
+		it("should require foodRatios to be an object", function () {
+			expect(planMeal(0, 0)).toThrowError();
+		});
+
+		it("should require numPortions to be a number", function () {
+			expect(planMeal({}, "hello")).toThrowError();
 		});
 
 		// (Provided)
@@ -65,36 +89,21 @@ describe("Test Meal Plan", function () {
 
 	});
 	
-	// When a ratio does not divide evenly
+	describe("Functional: Invalid Ratios", function () {
 
-	// re-visit this...
-	it("should handle when a single ratio is greater than portion", function () {
-		expect(planMeal({ 1: 5 }, 1)).toEqual({ 1: 5 });
+		it("should handle when a single ratio is greater than portion", function () {
+			expect(planMeal({ 1: 5 }, 1)).toEqual({ 1: 1 });
+		});
+
+		it("should handle when the total ratios is greater than portion count", function () {
+			expect(planMeal({ 1: 2, 2: 1, 3: 1 }, 3)).toEqual({ 1: 1, 2: 1, 3: 1 })
+		});
+
+		it("should handle when the ratios are not lowest denominators", function () {
+			expect(planMeal({ 1: 5, 2: 5 }, 4)).toEqual({ 1: 2, 2: 2 });
+		});
+		
 	});
-
-	// pretty sure this should be an error?
-	it("should handle when the total ratios is greater than portion count", function () {
-		expect(planMeal({ 1: 2, 2: 1, 3: 1 }, 3)).toEqual({ 1: 20, 2: 20 })
-	});
-
-	// If the ratios are not true ratios
-	it("should treat the dict values as a true ratio", function () {
-		expect(planMeal({ 1: 5, 2: 5 }, 4)).toEqual({ 1: 2, 2: 2 });
-	});
-
-
-	it("should allocate non-integer portion counts to the largest remainder", function () {
-		var input = {
-			1: 3,
-			2: 5  
-		},
-		output = {
-			1: 2,
-			2: 2
-		},
-		total = 4;
-	});
-
 
 	describe("Functional Requirements", function () {
 
