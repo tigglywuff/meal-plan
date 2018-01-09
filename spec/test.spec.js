@@ -1,4 +1,6 @@
 
+'use strict';
+
 var planMeal = require("../planMeal.js");
 
 beforeEach(function () {
