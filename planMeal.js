@@ -8,10 +8,10 @@ function validateInput(input) {
 		throw "invalid input: foodRatios";
 	}
 
-	// If any of the ratio values are negative
+	// If any of the keys are non-numeric or any of the ratio values are negative 
 	Object.keys(input.foodRatios).forEach(function (k) {
-		if (input.foodRatios[k] < 0) {
-			throw "invalid input: negative ratio";
+		if (!/^[0-9]+$/.test(k) || input.foodRatios[k] < 0) {
+			throw "invalid input: foodRatios";
 		}
 	});
 

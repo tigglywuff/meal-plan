@@ -54,6 +54,10 @@ it("should not accept negative ratios", function () {
 	expect(planMeal({ 1: 1, 2: -1 }, 5)).toThrowError();
 });
 
+it("should not accept non-numeric food item identifiers", function () {
+	expect(planMeal({ "meat": 1, "vegetarian": 1 }, 4)).toThrowError();
+});
+
 // 0 Ratio cases
 
 it("should handle single 0 ratio food item", function () {
