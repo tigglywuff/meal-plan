@@ -46,6 +46,14 @@ it("should accept both empty dictionary and 0 portion meal", function () {
 	expect(planMeal({}, 0)).toEqual({});
 });
 
+it("should not accept negative portioned meal", function () {
+	expect(planMeal({}, -1)).toThrowError();
+});
+
+it("should not accept negative ratios", function () {
+	expect(planMeal({ 1: 1, 2: -1 }, 5)).toThrowError();
+});
+
 // 0 Ratio cases
 
 it("should handle single 0 ratio food item", function () {

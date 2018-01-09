@@ -1,104 +1,96 @@
 'use strict';
 
 /**
-  * 
-  * @param {object} foodRatios
-  * @param {int} numPortions
-  * @return {object} foodQuantities
+  * Validates the input for getMealPlan(). Throws an error if any inputs are invalid.
   */
-function planMeal(foodRatios, numPortions) {
-	var ret = {},
-		total = 0,
-		remainder,
-		portionValue;
-
-	// Validate the input
-
-	if (!foodRatios || typeof foodRatios !== "object") {
+function validateInput(input) {
+	if (!input.foodRatios || typeof input.foodRatios !== "object") {
 		throw "invalid input: foodRatios";
 	}
 
-	if (numPortions === undefined || typeof numPortions !== "number") {
+	// If any of the ratio values are negative
+	Object.keys(input.foodRatios).forEach(function (k) {
+		if (input.foodRatios[k] < 0) {
+			throw "invalid input: negative ratio";
+		}
+	});
+
+	if (input.numPortions === undefined || typeof input.numPortions !== "number" || input.numPortions < 0) {
 		throw "invalid input: numPortions";
 	}
+}
 
-	// Get the ratio total
+/**
+  * Given specified ratios and portions, returns a map of actual quantities for each food item.
+  *
+  * @param {object} foodRatios
+  * @param {int} numPortions
+  * @returns {object} Actual quantities for each food item
+  */
+function getMealPlan(foodRatios, numPortions) {
+	var actualQuantities = {},
+		foodRatiosArr = [],
+		i,
+		remainder,
+		total = 0,
+		usedTotal = 0;
+
+	// Validate the input
+	validateInput({ "foodRatios": foodRatios, "numPortions": numPortions });
+
+	// Get the item ratio total
 	Object.keys(foodRatios).forEach(function (k) {
 		total += foodRatios[k];
 	});
 
-
-
-
-	// If the total is 0, simply return the original foodRatios
+	// If all the item ratios are 0, simply return the original foodRatios
 	if (!total) {
 		return foodRatios;
 	}
 
-	var foodRatiosArr = [];
-	var usedTotal = 0;
-
 	Object.keys(foodRatios).forEach(function (k) {
-		var foodRatio = {
+
+		// Store every food item's numeric identifier and its remainder in an array
+		foodRatiosArr.push({
 			"id": k,
 			"remainder": (foodRatios[k] * numPortions) % total
-		};
+		});
 
-		// Push it into an array. We can sort by remainder followed by id after.
-		foodRatiosArr.push(foodRatio);
+		// Assign final item quantities without remainders
+		actualQuantities[k] = Math.floor(foodRatios[k] * numPortions / total);
 
-		// Assign its final portion count without remainders taken into account
-		var c = Math.floor(foodRatios[k] * numPortions / total);
-		usedTotal += c;
-		ret[k] = c;
+		// Tally up the total quantities, used to calculate final remainder
+		usedTotal += actualQuantities[k];
 	});
 
-	remainder =  numPortions - usedTotal;
+	remainder = numPortions - usedTotal;
 
-	// Distribute the remainder based on the sorted foodRatiosArr
+	// Sort foodRatiosArr based on remainder then numeric id
+	foodRatiosArr.sort(function (a, b) {
+		if (a.remainder > b.remainder) return -1;
+		if (a.remainder < b.remainder) return 1;
 
-	var remainderIdSort = function (a, b) {
-		if (a.remainder > b.remainder) {
-			return -1;
-		}
-
-		if (a.remainder < b.remainder) {
-			return 1;
-		}
-
-		// Otherwise the remainders are even
-		if (a.id > b.id) {
-			return 1;
-		}
-
-		if (a.id < b.id) {
-			return -1;
-		}
+		if (a.id > b.id) return 1;
+		if (a.id < b.id) return -1;
 
 		return 0;
-	}
+	});
 
-
-	foodRatiosArr.sort(remainderIdSort);
-
-
-	var i = 0;
+	// Distribute the remainder based on the sorted foodRatiosArr
+	i = 0;
 	while (remainder) {
-
-		var key = foodRatiosArr[i].id;
-		ret[key]++;
+		actualQuantities[foodRatiosArr[i].id]++;
 		i++;
 		remainder--;
 	}
 
-	return ret;
+	return actualQuantities;
 }
 
 function main(foodRatios, numPortions) {
 	try {
-		return planMeal(foodRatios, numPortions);
+		return getMealPlan(foodRatios, numPortions);
 	} catch (e) {
-		console.log(e);
 		return { "error": e };
 	}
 }
